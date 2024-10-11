@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx
-  labels:
-    app: nginx
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -13,8 +12,19 @@ spec:
     metadata:
       labels:
         app: nginx
+      annotations:
+        traffic.sidecar.istio.io/includeInboundPorts: "*"
     spec:
       containers:
-      - name: nginx
-        image: nginx
-
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
